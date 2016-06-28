@@ -3,20 +3,13 @@ using System.Collections;
 
 public class ShowHover : MonoBehaviour {
     public GameObject roadPrefab;
-    private GameObject roadInstance;
+    [HideInInspector]
+    public GameObject roadInstance;
+    private Hex currentHex;
+    private Hex.Direction currentDirection;
 
 	// Use this for initialization
 	void Start () {
-        roadInstance = Instantiate(roadPrefab);
-        roadInstance.transform.parent = this.transform;
-        roadInstance.transform.localScale = new Vector3(1, 1, 1);
-    }
-
-    IEnumerator updateRoadInstance(Vector3 position, float angle) {
-        yield return new WaitForSeconds(2);
-        roadInstance.transform.localPosition = position;
-        Debug.Log(position);
-        roadInstance.transform.eulerAngles = new Vector3(0, angle);
     }
 
     // Update is called once per frame
@@ -26,21 +19,41 @@ public class ShowHover : MonoBehaviour {
 
         if(Physics.Raycast(ray, out hit, 100.0f)) {
             if(hit.collider.name.Contains("Hexagon")) {
-                Hex hex = hit.collider.gameObject.GetComponent<Hex>();
+                if(roadInstance == null) {
+                    roadInstance = Instantiate(roadPrefab);
+                    roadInstance.transform.parent = this.transform;
+                    roadInstance.transform.localScale = new Vector3(1, 1, 1);
+                }
+
+                currentHex = hit.collider.gameObject.GetComponent<Hex>();
                 Vector3 localHit = hit.point;
 
-                localHit = hex.transform.InverseTransformPoint(localHit);
+                localHit = currentHex.transform.InverseTransformPoint(localHit);
 
                 float angleFromCenter = Mathf.Atan2(localHit.z, localHit.x) * 180 / Mathf.PI;
-                Hex.Direction direction = hex.angleToDirection((int) Mathf.Round(angleFromCenter));
+                currentDirection = currentHex.buildingManager.angleToDirection((int) Mathf.Round(angleFromCenter));
 
-                Vector3 transformPosition = hex.transform.TransformPoint(
-                    hex.directionToLocalPosition(direction, roadInstance));
+                if(currentHex.buildingManager.roads.ContainsKey(currentDirection)) {
+                    Destroy(roadInstance);
+                    roadInstance = null;
+                } else {
 
-                float angleToRotate = hex.directionToRotateAngle(direction);
+                    Vector3 transformPosition = currentHex.buildingManager.directionToGlobalPosition(currentDirection);
 
-                StartCoroutine(updateRoadInstance(transformPosition, angleToRotate));
+                    float angleToRotate = currentHex.buildingManager.directionToRotateAngle(currentDirection);
+
+                    roadInstance.transform.localPosition = transformPosition;
+                    roadInstance.transform.eulerAngles = new Vector3(0, angleToRotate);
+                }
             }
+        } else {
+            Destroy(roadInstance);
+            roadInstance = null;
+            currentHex = null;
+        }
+
+        if (Input.GetMouseButtonDown(0) && roadInstance != null) {
+            currentHex.buildingManager.addRoad(currentDirection, roadInstance);
         }
     }
 }
