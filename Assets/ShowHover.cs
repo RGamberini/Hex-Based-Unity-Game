@@ -1,19 +1,25 @@
 ﻿using UnityEngine;
 using System.Collections;
+using UnityEngine.Networking;
 
-public class ShowHover : MonoBehaviour {
+public class ShowHover : NetworkBehaviour {
     public GameObject roadPrefab;
     [HideInInspector]
     public GameObject roadInstance;
+    private Board board;
+    private GameObject roadContainer;
     private Hex currentHex;
-    private Hex.Direction currentDirection;
+    private Direction currentDirection;
 
 	// Use this for initialization
 	void Start () {
+        board = GameObject.Find("Board").GetComponent<Board>();
+        roadContainer = GameObject.Find("Roads");
     }
 
     // Update is called once per frame
     void Update () {
+        if(!isLocalPlayer) return;
         Ray ray = Camera.main.ScreenPointToRay(Input.mousePosition);
         RaycastHit hit;
 
@@ -37,7 +43,6 @@ public class ShowHover : MonoBehaviour {
                     Destroy(roadInstance);
                     roadInstance = null;
                 } else {
-
                     Vector3 transformPosition = currentHex.buildingManager.directionToGlobalPosition(currentDirection);
 
                     float angleToRotate = currentHex.buildingManager.directionToRotateAngle(currentDirection);
@@ -53,7 +58,29 @@ public class ShowHover : MonoBehaviour {
         }
 
         if (Input.GetMouseButtonDown(0) && roadInstance != null) {
-            currentHex.buildingManager.addRoad(currentDirection, roadInstance);
+            Debug.Log("Spawning road");
+            CmdSpawnRoad(currentHex .xCoord, currentHex.yCoord, currentDirection, roadInstance.transform.localPosition, roadInstance.transform.localRotation);
+
+            Destroy(roadInstance);
+            roadInstance = null;
         }
+    }
+
+    [Command]
+    void CmdSpawnRoad(int xCoord, int yCoord, Direction direction, Vector3 roadPosition, Quaternion roadRotation) {
+        GameObject newRoad = Instantiate(
+            roadPrefab, 
+            roadPosition, 
+            roadRotation) as GameObject;
+        newRoad.transform.localScale = new Vector3(1, 1, 1);
+        newRoad.transform.parent = roadContainer.transform;
+
+        Road roadAsRoad = newRoad.GetComponent<Road>();
+        roadAsRoad.preview = false;
+        roadAsRoad.xCoord = xCoord;
+        roadAsRoad.yCoord = yCoord;
+        roadAsRoad.direction = direction;
+
+        NetworkServer.Spawn(newRoad);
     }
 }

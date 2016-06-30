@@ -1,13 +1,17 @@
 ﻿using UnityEngine;
 using System.Collections;
+using UnityEngine.Networking;
 
-public class Board : MonoBehaviour {
+public class Board : NetworkBehaviour {
     public Hex centerHex;
+    public Hex[][] board;
     private Vector3 size;
+    private const int boardSize = 2;
     // Use this for initialization
     void Start() {
-        size = centerHex.GetComponent<Collider>().bounds.size;
-        int boardSize = 2;
+        if(board == null) populateBoardArray();
+
+        if(!isServer) return;
 
         for (int yCoord = -boardSize; yCoord <= boardSize; yCoord++) {
             for (int xCoord = -boardSize; xCoord <= boardSize; xCoord++) {
@@ -17,20 +21,44 @@ public class Board : MonoBehaviour {
         }
     }
 
+    /** 
+     * Code smell right here but let me try to explain
+     *  for some reason Hex will call back to the board 
+     *  before it finishes starting, so to avoid the 
+     *  race condition I use two conditionals leading back
+     *  to this function
+     **/
+    public void populateBoardArray() {
+        board = new Hex[(boardSize * 2) + 1][];
+        size = centerHex.GetComponent<Renderer>().bounds.size;
+
+        for(int i = 0; i < board.Length; i++)
+            board[i] = new Hex[(boardSize * 2) + 1];
+    }
+
     private void createHex(int xCoord, int yCoord) {
         // Create a new hex
         Hex newHex = Instantiate(centerHex);
         newHex.xCoord = xCoord;
         newHex.yCoord = yCoord;
 
+        newHex.transform.parent = this.transform;
         Vector3 localPosition = gridCoordstoWorldCoords(xCoord, yCoord);
 
         // The transform is then applyled
         newHex.transform.localPosition = localPosition;
-        // This stops lines from appearing between hexes
-        newHex.transform.localScale = new Vector3(1.05f, 1.05f, 1.05f);
 
-        newHex.transform.parent = this.transform;
+        // This will register the Hex for the Server / Host
+        // Client side the Hex itself with register back with the board
+        registerHex(xCoord, yCoord, newHex);
+
+        newHex.parentNetId = this.netId;
+        NetworkServer.Spawn(newHex.GetComponent<Collider>().gameObject);
+    }
+
+    // Necessary because the client's board never builds this array
+    public void registerHex(int xCoord, int yCoord, Hex hex) {
+        board[xCoord + boardSize][yCoord + boardSize] = hex;
     }
 
     public Vector3 gridCoordstoWorldCoords(int xCoord, int yCoord) {
@@ -50,6 +78,19 @@ public class Board : MonoBehaviour {
         int deltaY = xy1[1] - xy2[1];
         int deltaZ = deltaX - deltaY;
         return Mathf.Max(Mathf.Abs(deltaX), Mathf.Abs(deltaY), Mathf.Abs(deltaZ));
+    }
+
+    public bool inRange(int xCoord, int yCoord) {
+        int properXCoord = xCoord + boardSize;
+        int properYCoord = yCoord + boardSize;
+
+        return (properXCoord >= 0 && properXCoord < board.Length) && (properYCoord >= 0 && properYCoord < board[0].Length);
+    }
+
+    public Hex getHex(int xCoord, int yCoord) {
+        if (inRange(xCoord, yCoord))
+            return board[xCoord + boardSize][yCoord + boardSize];
+        return null;
     }
 
     // Update is called once per frame

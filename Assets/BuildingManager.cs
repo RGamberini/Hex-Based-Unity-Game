@@ -1,58 +1,63 @@
 ﻿using UnityEngine;
 using System.Collections;
 using System.Collections.Generic;
+using UnityEngine.Networking;
 
 [RequireComponent(typeof(Hex))]
 [RequireComponent(typeof(Collider))]
-public class BuildingManager : MonoBehaviour {
-    public Dictionary<Hex.Direction, GameObject> roads;
-    public Dictionary<Hex.Direction, Vector3> roadPositions;
+public class BuildingManager : NetworkBehaviour {
+    public Dictionary<Direction, Road> roads;
+    public Dictionary<Direction, Vector3> roadPositions;
+    private GameObject roadContainer;
     public GameObject roadPrefab;
-    public Board board;
+    private Board board;
     private Vector3 size;
     private Hex hex;
 
     // Use this for initialization
-    void Start () {
+    void Start() {
+        board = GameObject.Find("Board").GetComponent<Board>();
+        roadContainer = GameObject.Find("Roads");
+
         size = this.GetComponent<Collider>().bounds.size;
         hex = this.GetComponent<Hex>();
 
-        roadPositions = new Dictionary<Hex.Direction, Vector3>();
-        roads = new Dictionary<Hex.Direction, GameObject>();
+        roadPositions = new Dictionary<Direction, Vector3>();
+        roads = new Dictionary<Direction, Road>();
 
-        foreach(Hex.Direction direction in directionArray) {
+        foreach(Direction direction in directionArray) {
             roadPositions.Add(direction, directionToLocalPosition(direction, roadPrefab));
         }
     }
-	
-	// Update is called once per frame
-	void Update () {
-	
-	}
 
-    private static Hex.Direction[] directionArray = new Hex.Direction[] { Hex.Direction.NORTHEAST, Hex.Direction.NORTHWEST, Hex.Direction.WEST, Hex.Direction.SOUTHWEST, Hex.Direction.SOUTHEAST, Hex.Direction.EAST };
-    public Hex.Direction angleToDirection(int angle) {
+    // Update is called once per frame
+    void Update() {
+
+    }
+
+    public static Direction[] directionArray = new Direction[] { Direction.NORTHEAST, Direction.NORTHWEST, Direction.WEST, Direction.SOUTHWEST, Direction.SOUTHEAST, Direction.EAST };
+    public Direction angleToDirection(int angle) {
         if(angle < 0) angle = 360 + angle;
         int start = 30;
         for(int i = 0; i < directionArray.Length; i++) {
             if(angle > start && angle <= start + 60) return directionArray[i];
             start += 60;
         }
-        return Hex.Direction.EAST;
+        return Direction.EAST;
     }
 
-    public float directionToRotateAngle(Hex.Direction direction) {
+    public float directionToRotateAngle(Direction direction) {
         switch(direction) {
-            case Hex.Direction.EAST:
-            case Hex.Direction.WEST:
+            case Direction.EAST:
+            case Direction.WEST:
                 return 0;
 
-            case Hex.Direction.NORTHEAST:
-            case Hex.Direction.SOUTHWEST:
+            case Direction.NORTHEAST:
+            case Direction.SOUTHWEST:
                 return -60;
 
-            case Hex.Direction.SOUTHEAST:
-            case Hex.Direction.NORTHWEST:
+            case Direction.SOUTHEAST:
+            case Direction.NORTHWEST:
                 return 60;
             default:
                 Debug.Log("ERROR INVALID DIRECTION");
@@ -60,22 +65,22 @@ public class BuildingManager : MonoBehaviour {
         }
     }
 
-    private Vector3 directionToLocalPosition(Hex.Direction direction, GameObject roadInstance) {
+    private Vector3 directionToLocalPosition(Direction direction, GameObject roadInstance) {
         Vector3 roadSize = roadInstance.GetComponent<Renderer>().bounds.size;
         switch(direction) {
-            case Hex.Direction.EAST:
+            case Direction.EAST:
                 return new Vector3((size.x / 2) - (roadInstance.GetComponent<Renderer>().bounds.size.y / 2), roadSize.y);
-            case Hex.Direction.WEST:
+            case Direction.WEST:
                 return new Vector3((size.x / 2) - (roadInstance.GetComponent<Renderer>().bounds.size.y / 2), roadSize.y) +
                     this.transform.InverseTransformPoint(board.gridCoordstoWorldCoords(hex.xCoord - 1, hex.yCoord));
-            case Hex.Direction.NORTHEAST:
+            case Direction.NORTHEAST:
                 return new Vector3((size.x / 4), roadSize.y, (size.z / 4) + (roadInstance.GetComponent<Renderer>().bounds.size.z / 4));
-            case Hex.Direction.NORTHWEST:
+            case Direction.NORTHWEST:
                 return new Vector3((size.x / 4), roadSize.y, (-size.z / 4) - (roadInstance.GetComponent<Renderer>().bounds.size.z / 4)) +
                     this.transform.InverseTransformPoint(board.gridCoordstoWorldCoords(hex.xCoord, hex.yCoord + 1));
-            case Hex.Direction.SOUTHEAST:
+            case Direction.SOUTHEAST:
                 return new Vector3((size.x / 4), roadSize.y, (-size.z / 4) - (roadInstance.GetComponent<Renderer>().bounds.size.z / 4));
-            case Hex.Direction.SOUTHWEST:
+            case Direction.SOUTHWEST:
                 return
                     new Vector3((size.x / 4), roadSize.y, (size.z / 4) + (roadInstance.GetComponent<Renderer>().bounds.size.z / 4)) +
                     this.transform.InverseTransformPoint(board.gridCoordstoWorldCoords(hex.xCoord - 1, hex.yCoord - 1));
@@ -85,24 +90,9 @@ public class BuildingManager : MonoBehaviour {
         }
     }
 
-    public Vector3 directionToGlobalPosition(Hex.Direction direction) {
+    public Vector3 directionToGlobalPosition(Direction direction) {
         Vector3 result;
         roadPositions.TryGetValue(direction, out result);
         return this.transform.TransformPoint(result);
-    }
-
-    public void addRoad(Hex.Direction direction, GameObject roadInstance) {
-        GameObject newRoad = Instantiate(roadInstance);
-        newRoad.transform.parent = this.transform;
-        newRoad.transform.localScale = new Vector3(1, 1, 1);
-
-        Renderer renderer = newRoad.GetComponent<Renderer>();
-        Color color = renderer.material.color;
-        color.a = 1;
-        renderer.material.color = color;
-
-        roads.Add(direction, roadInstance);
-        Destroy(roadInstance);
-        roadInstance = null;
     }
 }
