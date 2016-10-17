@@ -7,16 +7,24 @@ public class Board : NetworkBehaviour {
     public Hex[][] board;
     private Vector3 size;
     private const int boardSize = 2;
+    private BoardSetup setup;
     // Use this for initialization
     void Start() {
         if(board == null) populateBoardArray();
+        if(setup == null) setup = new BoardSetup();
 
         if(!isServer) return;
 
         for (int yCoord = -boardSize; yCoord <= boardSize; yCoord++) {
             for (int xCoord = -boardSize; xCoord <= boardSize; xCoord++) {
                 int distance = axialHexdistance(new int[] { xCoord, yCoord }, new int[] { 0, 0 });
-                if (distance <= boardSize) createHex(xCoord, yCoord);
+                if(distance <= boardSize) {
+                    HexType hexType = setup.getRandomHex();
+                    int token;
+                    if(hexType != HexType.DESERT) token = setup.getRandomToken();
+                    else token = -1;
+                    createHex(xCoord, yCoord, hexType, token);
+                }
             }
         }
     }
@@ -36,11 +44,13 @@ public class Board : NetworkBehaviour {
             board[i] = new Hex[(boardSize * 2) + 1];
     }
 
-    private void createHex(int xCoord, int yCoord) {
+    private void createHex(int xCoord, int yCoord, HexType hexType, int token) {
         // Create a new hex
         Hex newHex = Instantiate(centerHex);
         newHex.xCoord = xCoord;
         newHex.yCoord = yCoord;
+        newHex.diceRoll = token;
+        newHex.hexType = hexType;
 
         newHex.transform.parent = this.transform;
         Vector3 localPosition = gridCoordstoWorldCoords(xCoord, yCoord);

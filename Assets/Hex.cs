@@ -13,15 +13,23 @@ public class Hex : NetworkBehaviour {
     public int xCoord, yCoord;
     [SyncVar]
     public NetworkInstanceId parentNetId;
-    private static Color liveColor = new Color(76 / 255f, 175 / 255f, 80 / 255f);
+    [SyncVar]
+    public int diceRoll;
+    [SyncVar]
+    public HexType hexType;
 
     // Use this for initialization
     void Start () {
-        TextMesh coordinates = GetComponentInChildren<TextMesh>();
-        coordinates.text = xCoord + " " + yCoord;
+        Token token = GetComponentInChildren<Token>();
+        token.number = diceRoll;
         buildingManager = GetComponent<BuildingManager>();
 
         GetComponent<Transform>().localScale = new Vector3(1.05f, 1.05f, 1.05f);
+        GetComponent<Renderer>().material.color = hexType.color();
+
+        if (this.hexType == HexType.DESERT) {
+            Destroy(token.gameObject);
+        }
 	}
 
     public override void OnStartClient() {

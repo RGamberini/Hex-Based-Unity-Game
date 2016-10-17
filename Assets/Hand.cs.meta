@@ -1,0 +1,13 @@
+fileFormatVersion: 2
+guid: d385ceba8d9a28544b29a98884ce6dd4
+timeCreated: 1468694522
+licenseType: Free
+MonoImporter:
+  serializedVersion: 2
+  defaultReferences:
+  - cardPrefab: {fileID: 173302, guid: d740863590dda8d4ba3e6a50e4578b22, type: 2}
+  executionOrder: 0
+  icon: {instanceID: 0}
+  userData: 
+  assetBundleName: 
+  assetBundleVariant: 
