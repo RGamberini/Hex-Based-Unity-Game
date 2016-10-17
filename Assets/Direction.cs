@@ -3,7 +3,7 @@ public enum Direction {
     EAST, NORTHEAST, NORTHWEST, WEST, SOUTHWEST, SOUTHEAST, NORTH, SOUTH
 }
 
-public static class Extensions {
+public static class DirectionExtensions {
     public static Vector2 directionVector(this Direction direction) {
         switch(direction) {
             case Direction.EAST:
