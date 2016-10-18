@@ -65,26 +65,30 @@ public class BuildingManager : NetworkBehaviour {
         }
     }
 
-    public Vector3 directionToLocalPosition(Direction direction, GameObject roadInstance) {
+    private Vector3 directionToLocalPosition(Direction direction, GameObject roadInstance) {
         Vector3 roadSize = roadInstance.GetComponent<Renderer>().bounds.size;
         switch(direction) {
             //Work out the vector for half the directions and for the opposite direction just grab it from the adjacent hex
             case Direction.EAST:
                 return new Vector3((size.x / 2) - (roadSize.y / 2), roadSize.y);
-            
+           
             case Direction.NORTHEAST:
                 return new Vector3((size.x / 4), roadSize.y, (size.z / 4) + (roadSize.z / 4));
             
             case Direction.SOUTHEAST:
                 return new Vector3((size.x / 4), roadSize.y, (-size.z / 4) - (roadSize.z / 4));
-            
+            case Direction.WEST:
+            case Direction.NORTHWEST:
+            case Direction.SOUTHWEST:
+                Vector2 directionVector = direction.directionVector();
+                return directionToLocalPosition(direction.oppositeDirection(), roadInstance) +
+                    this.transform.InverseTransformPoint(
+                        board.gridCoordstoWorldCoords(
+                            hex.xCoord + (int) directionVector.x, hex.yCoord + (int) directionVector.y));
+                
             default:
-                Direction oppositeDirection = direction.oppositeDirection();
-                Vector2 oppositeDirectionVector = oppositeDirection.directionVector();
-
-                return this.transform.InverseTransformPoint(
-                    board.getHex(hex.xCoord - (int) oppositeDirectionVector.x, hex.yCoord - (int) oppositeDirectionVector.y)
-                        .buildingManager.directionToGlobalPosition(direction.oppositeDirection()));
+                Debug.LogError("ERROR Unknown direction: " + direction);
+                return new Vector3();
         }
     }
 
