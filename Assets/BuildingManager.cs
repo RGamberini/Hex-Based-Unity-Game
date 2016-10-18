@@ -65,28 +65,26 @@ public class BuildingManager : NetworkBehaviour {
         }
     }
 
-    private Vector3 directionToLocalPosition(Direction direction, GameObject roadInstance) {
+    public Vector3 directionToLocalPosition(Direction direction, GameObject roadInstance) {
         Vector3 roadSize = roadInstance.GetComponent<Renderer>().bounds.size;
         switch(direction) {
+            //Work out the vector for half the directions and for the opposite direction just grab it from the adjacent hex
             case Direction.EAST:
-                return new Vector3((size.x / 2) - (roadInstance.GetComponent<Renderer>().bounds.size.y / 2), roadSize.y);
-            case Direction.WEST:
-                return new Vector3((size.x / 2) - (roadInstance.GetComponent<Renderer>().bounds.size.y / 2), roadSize.y) +
-                    this.transform.InverseTransformPoint(board.gridCoordstoWorldCoords(hex.xCoord - 1, hex.yCoord));
+                return new Vector3((size.x / 2) - (roadSize.y / 2), roadSize.y);
+            
             case Direction.NORTHEAST:
-                return new Vector3((size.x / 4), roadSize.y, (size.z / 4) + (roadInstance.GetComponent<Renderer>().bounds.size.z / 4));
-            case Direction.NORTHWEST:
-                return new Vector3((size.x / 4), roadSize.y, (-size.z / 4) - (roadInstance.GetComponent<Renderer>().bounds.size.z / 4)) +
-                    this.transform.InverseTransformPoint(board.gridCoordstoWorldCoords(hex.xCoord, hex.yCoord + 1));
+                return new Vector3((size.x / 4), roadSize.y, (size.z / 4) + (roadSize.z / 4));
+            
             case Direction.SOUTHEAST:
-                return new Vector3((size.x / 4), roadSize.y, (-size.z / 4) - (roadInstance.GetComponent<Renderer>().bounds.size.z / 4));
-            case Direction.SOUTHWEST:
-                return
-                    new Vector3((size.x / 4), roadSize.y, (size.z / 4) + (roadInstance.GetComponent<Renderer>().bounds.size.z / 4)) +
-                    this.transform.InverseTransformPoint(board.gridCoordstoWorldCoords(hex.xCoord - 1, hex.yCoord - 1));
+                return new Vector3((size.x / 4), roadSize.y, (-size.z / 4) - (roadSize.z / 4));
+            
             default:
-                Debug.LogError("ERROR Unknown direction: " + direction);
-                return new Vector3();
+                Direction oppositeDirection = direction.oppositeDirection();
+                Vector2 oppositeDirectionVector = oppositeDirection.directionVector();
+
+                return this.transform.InverseTransformPoint(
+                    board.getHex(hex.xCoord - (int) oppositeDirectionVector.x, hex.yCoord - (int) oppositeDirectionVector.y)
+                        .buildingManager.directionToGlobalPosition(direction.oppositeDirection()));
         }
     }
 

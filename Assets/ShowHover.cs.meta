@@ -1,11 +1,11 @@
 fileFormatVersion: 2
 guid: de7353c6fd0031544a2e51c60dc0798f
-timeCreated: 1467221590
+timeCreated: 1476743457
 licenseType: Free
 MonoImporter:
   serializedVersion: 2
   defaultReferences:
-  - roadPrefab: {fileID: 136378, guid: 034ed09672fc9d44397495012ec99e1d, type: 2}
+  - roadPrefab: {fileID: 188520, guid: 5f161edd3f22dcc44a8ee171b0712cdf, type: 2}
   - roadInstance: {instanceID: 0}
   executionOrder: 0
   icon: {instanceID: 0}
