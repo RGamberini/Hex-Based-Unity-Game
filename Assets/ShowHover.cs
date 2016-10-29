@@ -3,6 +3,7 @@ using System.Collections;
 using UnityEngine.Networking;
 
 public class ShowHover : NetworkBehaviour {
+    public GameObject[] buildables;
     public GameObject roadPrefab;
     [HideInInspector]
     public GameObject roadInstance;
@@ -70,7 +71,12 @@ public class ShowHover : NetworkBehaviour {
 
         if (Input.GetMouseButtonDown(0) && roadInstance != null) {
             Debug.Log("Spawning road");
-            CmdSpawnRoad(currentHex .xCoord, currentHex.yCoord, currentDirection, roadInstance.transform.localPosition, roadInstance.transform.localRotation);
+            CmdSpawnRoad(
+                currentHex.xCoord, 
+                currentHex.yCoord,
+                currentDirection,
+                roadInstance.transform.localPosition,
+                roadInstance.transform.localRotation);
 
             Destroy(roadInstance);
             roadInstance = null;
@@ -86,7 +92,7 @@ public class ShowHover : NetworkBehaviour {
         newRoad.transform.localScale = new Vector3(1, 1, 1);
         newRoad.transform.parent = roadContainer.transform;
 
-        Road roadAsRoad = newRoad.GetComponent<Road>();
+        Buildable roadAsRoad = newRoad.GetComponent<Buildable>();
         roadAsRoad.preview = false;
         roadAsRoad.xCoord = xCoord;
         roadAsRoad.yCoord = yCoord;
