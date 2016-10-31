@@ -10,6 +10,12 @@ public class Settlement : Buildable {
     void Start() {
         base.Start();
         settlementSize = settlementPrefab.GetComponent<MeshFilter>().sharedMesh.bounds.size;
+
+        // Hexes are scaled 5% to make them look nice
+//        hexSize.x *= 1.05f;
+//        hexSize.y *= 1.05f;
+//        hexSize.z *= 1.05f;
+
     }
 
     // Update is called once per frame
@@ -17,28 +23,29 @@ public class Settlement : Buildable {
 
     }
 
-    protected override void addToBoard(Board board) {
+    protected override void addToBoard() {
         board.getHex(xCoord, yCoord).buildingManager.roads.Add(direction, this);
 
         Hex adjacentHex = board.getHex(xCoord + (int) direction.directionVector().x, yCoord + (int) direction.directionVector().y);
         if(adjacentHex != null) adjacentHex.buildingManager.roads.Add(direction.oppositeDirection(), this);
     }
 
-    protected override Vector3 directionToLocalPosition(Direction direction) {
+    public override Vector3 directionToLocalPosition(Direction direction) {
+        float xRadius = hexSize.x / 2, zRadius = hexSize.z / 2f;
         switch(direction) {
             //Work out the vector for half the directions and for the opposite direction just grab it from the adjacent hex
             case Direction.EAST:
-                return new Vector3((hexSize.x / 2) - (settlementSize.x / 2), settlementSize.y, (-hexSize.z / 4) + (settlementSize.z / 4));
+                return new Vector3(xRadius, hexSize.y, -zRadius / 2);
             case Direction.NORTHEAST:
-                return new Vector3((hexSize.x / 2) - (settlementSize.x / 2), settlementSize.y, (hexSize.z / 4) - (settlementSize.z / 4));
+                return new Vector3(xRadius, hexSize.y, zRadius / 2);
             case Direction.SOUTHEAST:
-                return new Vector3(0, settlementSize.y, -1 * ((hexSize.z / 2) - (settlementSize.z / 2)));
+                return new Vector3(0, hexSize.y, -zRadius);
             case Direction.NORTHWEST:
-                return new Vector3(0, settlementSize.y, (hexSize.z / 2) - (settlementSize.z / 2));
+                return new Vector3(0, hexSize.y, zRadius);
             case Direction.WEST:
-                return new Vector3((-hexSize.x / 2) + (settlementSize.x / 2), settlementSize.y, (hexSize.z / 4) - (settlementSize.z / 4));
+                return new Vector3(-xRadius, hexSize.y, zRadius / 2);
             case Direction.SOUTHWEST:
-                return new Vector3((-hexSize.x / 2) + (settlementSize.x / 2), settlementSize.y, (-hexSize.z / 4) + (settlementSize.z / 4));
+                return new Vector3(-xRadius, hexSize.y, -zRadius / 2);
             default:
                 Debug.LogError("ERROR Unknown direction: " + direction);
                 return new Vector3();

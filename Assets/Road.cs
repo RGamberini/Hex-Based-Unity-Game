@@ -17,34 +17,32 @@ public class Road : Buildable {
 	
 	}
 
-    protected override void addToBoard(Board board) {
+    protected override void addToBoard() {
         board.getHex(xCoord, yCoord).buildingManager.roads.Add(direction, this);
 
         Hex adjacentHex = board.getHex(xCoord + (int) direction.directionVector().x, yCoord + (int) direction.directionVector().y);
         if(adjacentHex != null) adjacentHex.buildingManager.roads.Add(direction.oppositeDirection(), this);
     }
 
-    protected override Vector3 directionToLocalPosition(Direction direction) {
+    public override Vector3 directionToLocalPosition(Direction direction) {
+        float xRadius = hexSize.x/2f, zRadius = hexSize.z * (3f/8f);
         switch(direction) {
             //Work out the vector for half the directions and for the opposite direction just grab it from the adjacent hex
             case Direction.EAST:
-                return new Vector3((hexSize.x / 2) - (roadSize.y / 2), roadSize.y);
+                return new Vector3(xRadius, 1);
+            case Direction.WEST:
+                return new Vector3(-xRadius, 1);
 
             case Direction.NORTHEAST:
-                return new Vector3((hexSize.x / 4), roadSize.y, (hexSize.z / 4) + (roadSize.z / 4));
-
-            case Direction.SOUTHEAST:
-                return new Vector3((hexSize.x / 4), roadSize.y, (-hexSize.z / 4) - (roadSize.z / 4));
-            case Direction.WEST:
+                return new Vector3(xRadius / 2, 1, zRadius);
             case Direction.NORTHWEST:
-            case Direction.SOUTHWEST:
-                return new Vector3();
-//                Vector2 directionVector = direction.directionVector();
-//                return directionToLocalPosition(direction.oppositeDirection(), roadInstance) +
-//                    this.transform.InverseTransformPoint(
-//                        board.gridCoordstoWorldCoords(
-//                            hex.xCoord + (int) directionVector.x, hex.yCoord + (int) directionVector.y));
+                return new Vector3(-xRadius / 2, 1, zRadius);
+            
+            case Direction.SOUTHEAST:
+                return new Vector3(xRadius / 2, 1, -zRadius);
 
+            case Direction.SOUTHWEST:
+                return new Vector3(-xRadius / 2, 1, -zRadius);
             default:
                 Debug.LogError("ERROR Unknown direction: " + direction);
                 return new Vector3();

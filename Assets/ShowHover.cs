@@ -10,6 +10,7 @@ public class ShowHover : NetworkBehaviour {
     private Board board;
     private GameObject roadContainer;
     private Hex currentHex;
+    private Buildable currentBuildable;
     public Direction currentDirection;
 
 	// Use this for initialization
@@ -34,10 +35,14 @@ public class ShowHover : NetworkBehaviour {
                     roadInstance = Instantiate(roadPrefab);
                     roadInstance.transform.parent = this.transform;
                     roadInstance.transform.localScale = new Vector3(1, 1, 1);
+
+                    currentBuildable = roadInstance.GetComponent<Buildable>();
                 }
                 
                 // Grab the hex we hit
                 currentHex = hit.collider.gameObject.GetComponent<Hex>();
+                currentBuildable.xCoord = currentHex.xCoord;
+                currentBuildable.yCoord = currentHex.yCoord;
                 // And where we hit it
                 Vector3 localHit = hit.point;
                 // In world space
@@ -47,7 +52,7 @@ public class ShowHover : NetworkBehaviour {
                 // Work the angle out from where we hit in relation to the origin
                 float angleFromCenter = Mathf.Atan2(localHit.z, localHit.x) * 180 / Mathf.PI;
                 // Now translate that angle into a direction
-                currentDirection = currentHex.buildingManager.angleToDirection((int) Mathf.Round(angleFromCenter));
+                currentDirection = currentBuildable.angleToDirection((int) Mathf.Round(angleFromCenter));
                 
                 // If there is already a road in that spot destroy the instance
                 if(currentHex.buildingManager.roads.ContainsKey(currentDirection)) {
@@ -55,10 +60,11 @@ public class ShowHover : NetworkBehaviour {
                     roadInstance = null;
                 } else {
                     // Other wise translate that direction into a Position + Angle and apply them to the instance
-                    Vector3 transformPosition = currentHex.buildingManager.directionToGlobalPosition(currentDirection);
-                    float angleToRotate = currentHex.buildingManager.directionToRotateAngle(currentDirection);
+                    Vector3 transformPosition = currentBuildable.directionToLocalPosition(currentDirection);
+                    float angleToRotate = currentBuildable.directionToRotateAngle(currentDirection);
+                    transformPosition += currentHex.transform.position;
 
-                    roadInstance.transform.localPosition = transformPosition;
+                    roadInstance.transform.position = transformPosition;
                     roadInstance.transform.eulerAngles = new Vector3(0, angleToRotate);
                 }
             }
