@@ -1,10 +1,15 @@
 fileFormatVersion: 2
 guid: 12daa91960701f24a8b84822032a2d1c
-timeCreated: 1468380280
+timeCreated: 1478330715
 licenseType: Free
 MonoImporter:
   serializedVersion: 2
-  defaultReferences: []
+  defaultReferences:
+  - rockTexture: {fileID: 2800000, guid: a8fb984cb71512a45af1c13385f45d5b, type: 3}
+  - brickTexture: {fileID: 2800000, guid: 8bec764e2fa87d04aa7f99548b3e9991, type: 3}
+  - sheepTexture: {fileID: 2800000, guid: c8ec3dcc04cdd4145a2e4318a12426d2, type: 3}
+  - wheatTexture: {fileID: 2800000, guid: d3098245ee1b726408b2df269ee25dbc, type: 3}
+  - woodTexture: {fileID: 2800000, guid: cadd31e2778cb8442876e325c7b99e4b, type: 3}
   executionOrder: 0
   icon: {instanceID: 0}
   userData: 

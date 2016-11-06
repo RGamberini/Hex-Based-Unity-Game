@@ -38,6 +38,7 @@ public class Hex : NetworkBehaviour {
 
         if(parentObject.board == null) parentObject.populateBoardArray();
         parentObject.registerHex(xCoord, yCoord, this);
+        this.gameObject.name = "X: " + xCoord + " Y: " + yCoord;
     }
 
     // Update is called once per frame

@@ -15,11 +15,12 @@ public class Hand : MonoBehaviour {
         camera = this.gameObject.GetComponent<Camera>();
 	}
 
-    public void createCard() {
+    public void createCard(HexType hexType) {
         Card card = Instantiate(cardPrefab).GetComponent<Card>();
         //if (cardSize == Vector3.zero) cardSize = card.GetComponent<Renderer>().bounds.size;
         card.index = cards.Count;
         card.transform.parent = this.transform;
+        card.hexType = hexType;
         cards.Add(card);
 
         reposition();

@@ -1,6 +1,6 @@
 ﻿using UnityEngine;
 public enum Direction {
-    EAST, NORTHEAST, NORTHWEST, WEST, SOUTHWEST, SOUTHEAST, NORTH, SOUTH
+    NORTHEAST, NORTHWEST, WEST, SOUTHWEST, SOUTHEAST, EAST
 }
 
 public static class DirectionExtensions {
@@ -19,11 +19,7 @@ public static class DirectionExtensions {
             case Direction.SOUTHWEST:
                 return new Vector2(-1, -1);
             default:
-                if(direction == Direction.NORTH || direction == Direction.SOUTH) {
-                    Debug.LogError("ERROR North and South have no direction vector");
-                } else {
-                    Debug.LogError("ERROR Unknown direction: " + direction);
-                }
+                Debug.LogError("ERROR Unknown direction: " + direction);
                 return new Vector2();
         }
     }
@@ -42,13 +38,9 @@ public static class DirectionExtensions {
                 return Direction.NORTHWEST;
             case Direction.SOUTHWEST:
                 return Direction.NORTHEAST;
-            case Direction.NORTH:
-                return Direction.SOUTH;
-            case Direction.SOUTH:
-                return Direction.NORTH;
             default:
                 Debug.LogError("ERROR Unknown direction: " + direction);
-                return Direction.NORTH;
+                return Direction.WEST;
         }
     }
 }

@@ -5,17 +5,10 @@ using System;
 public class Settlement : Buildable {
     public GameObject settlementPrefab;
     private Vector3 settlementSize;
-
     // Use this for initialization
     void Start() {
         base.Start();
         settlementSize = settlementPrefab.GetComponent<MeshFilter>().sharedMesh.bounds.size;
-
-        // Hexes are scaled 5% to make them look nice
-//        hexSize.x *= 1.05f;
-//        hexSize.y *= 1.05f;
-//        hexSize.z *= 1.05f;
-
     }
 
     // Update is called once per frame
@@ -24,10 +17,32 @@ public class Settlement : Buildable {
     }
 
     protected override void addToBoard() {
-        board.getHex(xCoord, yCoord).buildingManager.roads.Add(direction, this);
+        ResourceManager resourceManager = GameObject.FindObjectOfType<ResourceManager>();
+
+        Hex currentHex = board.getHex(xCoord, yCoord);
+        currentHex.buildingManager.points.Add(direction, this);
+        addResource(currentHex, resourceManager);
 
         Hex adjacentHex = board.getHex(xCoord + (int) direction.directionVector().x, yCoord + (int) direction.directionVector().y);
-        if(adjacentHex != null) adjacentHex.buildingManager.roads.Add(direction.oppositeDirection(), this);
+        if (adjacentHex != null) {
+            adjacentHex.buildingManager.points.Add(directionArray[((int) direction.oppositeDirection() + 1) % directionArray.Length], this);
+            addResource(adjacentHex, resourceManager);
+        }
+
+        Direction thrityDegreeShift = directionArray[((int) direction + directionArray.Length - 1) % directionArray.Length];
+        adjacentHex = board.getHex(xCoord + (int) thrityDegreeShift.directionVector().x, yCoord + (int) thrityDegreeShift.directionVector().y);
+        if (adjacentHex != null) {
+            adjacentHex.buildingManager.points.Add(thrityDegreeShift.oppositeDirection(), this);
+            addResource(adjacentHex, resourceManager);
+        }
+    }
+
+    private void addResource(Hex hex, ResourceManager resourceManager) {
+        if (hex.hexType != HexType.DESERT) resourceManager.addResource(playerIndex, hex.diceRoll, hex.hexType);
+    }
+
+    public override bool canBuild(Hex hex, Direction direction) {
+        return hex.GetComponent<BuildingManager>().points.ContainsKey(direction);
     }
 
     public override Vector3 directionToLocalPosition(Direction direction) {
@@ -60,11 +75,11 @@ public class Settlement : Buildable {
 
             case Direction.NORTHEAST:
             case Direction.SOUTHWEST:
-                return -30;
+                return 30;
 
             case Direction.SOUTHEAST:
             case Direction.NORTHWEST:
-                return 90;
+                return 30;
             default:
                 Debug.Log("ERROR INVALID DIRECTION");
                 return 0;

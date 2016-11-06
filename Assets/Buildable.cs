@@ -12,11 +12,12 @@ public abstract class Buildable : NetworkBehaviour {
     public Direction direction;
 
     public GameObject hexPrefab;
+    public int playerIndex;
     protected Vector3 hexSize;
     protected Board board;
 
 	// Use this for initialization
-	protected void Start ()
+	protected void Start()
 	{
 	    hexSize = hexPrefab.GetComponent<MeshFilter>().sharedMesh.bounds.size;
 
@@ -37,6 +38,7 @@ public abstract class Buildable : NetworkBehaviour {
 	}
 
     protected abstract void addToBoard();
+    public abstract bool canBuild(Hex hex, Direction direction);
     public abstract float directionToRotateAngle(Direction direction);
     public abstract Vector3 directionToLocalPosition(Direction direction);
 

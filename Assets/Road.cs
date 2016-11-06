@@ -18,10 +18,14 @@ public class Road : Buildable {
 	}
 
     protected override void addToBoard() {
-        board.getHex(xCoord, yCoord).buildingManager.roads.Add(direction, this);
+        board.getHex(xCoord, yCoord).buildingManager.edges.Add(direction, this);
 
         Hex adjacentHex = board.getHex(xCoord + (int) direction.directionVector().x, yCoord + (int) direction.directionVector().y);
-        if(adjacentHex != null) adjacentHex.buildingManager.roads.Add(direction.oppositeDirection(), this);
+        if(adjacentHex != null) adjacentHex.buildingManager.edges.Add(direction.oppositeDirection(), this);
+    }
+
+    public override bool canBuild(Hex hex, Direction direction) {
+        return hex.GetComponent<BuildingManager>().edges.ContainsKey(direction);
     }
 
     public override Vector3 directionToLocalPosition(Direction direction) {
@@ -29,20 +33,20 @@ public class Road : Buildable {
         switch(direction) {
             //Work out the vector for half the directions and for the opposite direction just grab it from the adjacent hex
             case Direction.EAST:
-                return new Vector3(xRadius, 1);
+                return new Vector3(xRadius, hexSize.y - (roadSize.y / 2));
             case Direction.WEST:
-                return new Vector3(-xRadius, 1);
+                return new Vector3(-xRadius, hexSize.y - (roadSize.y / 2));
 
             case Direction.NORTHEAST:
-                return new Vector3(xRadius / 2, 1, zRadius);
+                return new Vector3(xRadius / 2, hexSize.y - (roadSize.y / 2), zRadius);
             case Direction.NORTHWEST:
-                return new Vector3(-xRadius / 2, 1, zRadius);
+                return new Vector3(-xRadius / 2, hexSize.y - (roadSize.y / 2), zRadius);
             
             case Direction.SOUTHEAST:
-                return new Vector3(xRadius / 2, 1, -zRadius);
+                return new Vector3(xRadius / 2, hexSize.y - (roadSize.y / 2), -zRadius);
 
             case Direction.SOUTHWEST:
-                return new Vector3(-xRadius / 2, 1, -zRadius);
+                return new Vector3(-xRadius / 2, hexSize.y - (roadSize.y / 2), -zRadius);
             default:
                 Debug.LogError("ERROR Unknown direction: " + direction);
                 return new Vector3();
